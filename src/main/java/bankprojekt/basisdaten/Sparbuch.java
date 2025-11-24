@@ -92,11 +92,16 @@ public class Sparbuch extends Konto {
 
         // 2. Logik der Oberklasse aufrufen um Kontostand und Kontowährung zu aktualisieren
         super.waehrungsWechsel(neu);
-
     }
 
+    /**
+     * Hebt Geld ab und prüft, ob die AbhebeSumme des Monats noch im Rahmen liegt
+     * @param betrag abzuhebender Betrag
+     * @return Wahrheitswert
+     * @throws GesperrtException eine Exception
+     */
     @Override
-    public boolean abheben (Geldbetrag betrag) throws GesperrtException{
+    public boolean abheben (Geldbetrag betrag) throws GesperrtException {
         if (betrag == null || betrag.isNegativ()) {
             throw new IllegalArgumentException("Betrag ungültig");
         }
@@ -120,6 +125,7 @@ public class Sparbuch extends Konto {
 
         // Prüfung ob Abhebung möglich
         Geldbetrag neuerKontostand = getKontostand().minus(betragInKontoWaehrung);
+
         if (neuerKontostand.compareTo(minimumInKontoWaehrung) >= 0 &&
                 bereitsAbgehoben.plus(betragInKontoWaehrung).compareTo(maxAhebInKontoWaehrung)<= 0) {
 
@@ -127,8 +133,9 @@ public class Sparbuch extends Konto {
             bereitsAbgehoben = bereitsAbgehoben.plus(betragInKontoWaehrung);
             return true;
         }
-        else
+        else {
             return false;
+        }
     }
 
     @Override

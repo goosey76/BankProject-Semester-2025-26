@@ -2,6 +2,7 @@ package bankprojekt.verwaltung;
 
 import bankprojekt.basisdaten.*;
 import bankprojekt.exceptions.GesperrtException;
+import bankprojekt.exceptions.UngueltigeKontonummerException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,11 +42,16 @@ public class Bank {
     }
 
     /**
-     * Gibt die Bankleitzahl zurück
-     * @return die Bankleitzahl
+     * fügt ein mockKonto zur KontenMap der Bank und gibt getKontostand wieder
+     * @param mockKonto Konto k
+     * @return den Mock mit seiner Kontonummer
      */
-    public long getBankleitzahl() {
-        return bankleitzahl;
+    public  long mockEinfuegen(Konto mockKonto) {
+        if (mockKonto == null) {
+            throw new NullPointerException("Das Konto dar nicht null sein.");
+        }
+        kontenMap.put(nextKontonummer, mockKonto);
+        return nextKontonummer++;
     }
 
     /**
@@ -76,6 +82,13 @@ public class Bank {
         return nextKontonummer++;
     }
 
+    /**
+     * Gibt die Bankleitzahl zurück
+     * @return die Bankleitzahl
+     */
+    public long getBankleitzahl() {
+        return bankleitzahl;
+    }
 
     /**
      * liefert einen Single string mit Kontonummer und Kontostand wieder
@@ -96,11 +109,11 @@ public class Bank {
      * @return eine neue Liste, der Kontonummern, der Bank
      */
     public List<Long> getAlleKontonummern() {
-        return new ArrayList<Long>(kontenMap.keySet());
+        return new ArrayList<>(kontenMap.keySet());
     }
 
     /**
-     * Hebt Geld von VON + Wahrheitswert
+     * Hebt Geld vonKontoNummer + Wahrheitswert
       * @param von Von der Kontonummer
      * @param betrag der Geldbetrag
      * @return ob es geklappt hat oder nicht
@@ -149,7 +162,7 @@ public class Bank {
         }
         // Falls der Betrag oder Verwendungszweck negativ/ungültig ist/sind.
         if (betrag.isNegativ()) throw new ArithmeticException("Der Überweisungsbetrag darf nicht negativ sein");
-        if (verwendungszweck == null) throw new IllegalArgumentException("Der Verwendungszweck ist nicht gültig.");
+        if (verwendungszweck == null) throw new NullPointerException("Der Verwendungszweck ist nicht gültig.");
 
         Konto vonKonto = kontenMap.get(vonKontoNr);
         Konto nachKonto = kontenMap.get(nachKontoNr);
@@ -169,6 +182,34 @@ public class Bank {
             return true;
         }
         return false;
+    }
+
+    /**
+     * löscht das Konto mit der angegebenen nummer und gibt true zurück,
+     * wenn tatsächlich ein Konto gelöscht wurde, bzw. false,
+     * wenn die Kontonummer gar nicht erst existierte.
+     * @param nummer die zu löschende Kontonummer
+     */
+    public boolean kontoLoeschen(long nummer) {
+        if (!kontenMap.containsKey(nummer)) {
+            return false;
+        }
+        // entferne die Kontonummer von der Liste
+        kontenMap.remove(nummer);
+        return true;
+    }
+
+    /**
+     * liefert den Kontostand des Kontos mit der angegebenen nummer zurück.
+     * @param nummer die Kontonummer
+     * @return der gewünschte Geldbetrag
+     */
+    public Geldbetrag getKontostand(long nummer) {
+        if (!kontenMap.containsKey(nummer)) {
+            throw new UngueltigeKontonummerException();
+        }
+        // Gib Geldbetrag zurück
+        return kontenMap.get(nummer).getKontostand();
     }
 
     /**
